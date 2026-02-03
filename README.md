@@ -6,3 +6,7 @@ Jeg forventer at lære, hvordan programkvalitet, fejlhåndtering og sikkerhedsde
 
 ### Billede af Python test
 ![alt text](image.png)
+
+
+### Billede hvor jeg har tilføjet 3 tests.
+![alt text](image-1.png)
