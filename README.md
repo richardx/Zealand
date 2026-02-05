@@ -94,3 +94,17 @@ Kontoen låses efter 3 fejlede loginforsøg:
 | Cycle process test | Release candidate gate |
 | Test pyramiden | Alle gates |
 | Decision table test | Code/Dev gate |
+
+
+
+## PyTest (Leg)
+
+Data-dreven unit test der kombinerer Decision Table Test og Grænseværditest.
+
+Testen bruger `@pytest.mark.parametrize` til at køre samme testfunktion med forskellige input-data. Hver række i parametrene repræsenterer et testscenarie fra vores Decision Table (kombinationer af brugernavn, password, kontostatus) og Grænseværditest (antal fejlede loginforsøg ved grænsen på 3).
+
+Se filen: [test_login.py](test_login.py)
+
+**Test resultat:**
+
+![Test resultat](image-2.png)
