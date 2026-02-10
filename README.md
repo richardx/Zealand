@@ -176,7 +176,6 @@ def test_read_user_not_found(self):
 def test_update_user_with_unknown_field(self):
 ```
 
-> **[INDSÆT SCREENSHOT HER]** – Screenshot af koden i `test.py` der viser risikokommentarerne over hver test.
 
 ---
 
@@ -192,5 +191,3 @@ def test_create_user(self):
     # Then: Brugeren returneres med korrekte data
     self.assertEqual(user["first_name"], "Anders")
 ```
-
-> **[INDSÆT SCREENSHOT HER]** – Screenshot af koden i `test.py` der viser Given/When/Then kommentarerne.
