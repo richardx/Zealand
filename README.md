@@ -191,3 +191,72 @@ def test_create_user(self):
     # Then: Brugeren returneres med korrekte data
     self.assertEqual(user["first_name"], "Anders")
 ```
+
+---
+
+## Kryptering og Hashing
+
+### Hvilke algoritmer havde jeg at vælge imellem?
+
+**Kryptering (til persondata):**
+
+| Algoritme | Type | Beskrivelse |
+|---|---|---|
+| AES (Fernet) | Symmetrisk | Samme nøgle til kryptering og dekryptering. Hurtig og sikker. |
+| RSA | Asymmetrisk | To nøgler (offentlig + privat). Langsommere, bruges typisk til kommunikation. |
+| ChaCha20 | Symmetrisk | Alternativ til AES. Hurtig på enheder uden hardware-AES support. |
+
+**Jeg valgte Fernet (AES)** fordi det er simpelt at bruge, sikkert nok til vores formål, og det er en symmetrisk algoritme – vi har kun brug for én nøgle, da det er den samme applikation der både krypterer og dekrypterer.
+
+**Hashing (til passwords):**
+
+| Algoritme | Beskrivelse |
+|---|---|
+| SHA-256 | Hurtig hash-funktion. Producerer et unikt 64-tegn hex-hash. |
+| bcrypt | Langsom hash designet til passwords. Inkluderer salt automatisk. |
+| Argon2 | Nyere password-hash. Vinder af Password Hashing Competition. |
+
+**Jeg valgte SHA-256** fordi det er simpelt og indbygget i Python (`hashlib`). I et produktionsmiljø ville bcrypt eller Argon2 være bedre valg, da de er designet til at være langsomme og dermed sværere at brute-force.
+
+---
+
+### Hvornår og hvorfor krypterer jeg data?
+
+Data krypteres **når den gemmes** i JSON-filen (`create_user` og `update_user`). Det gøres fordi:
+
+- GDPR kræver at persondata beskyttes. Hvis nogen får adgang til JSON-filen, kan de ikke læse persondata som navne og adresser.
+- Kun applikationen med den korrekte nøgle (`secret.key`) kan læse dataen.
+
+Felter der krypteres: `first_name`, `last_name`, `address`, `street_number`.
+
+Passwords krypteres **ikke** – de **hashes** i stedet, fordi vi aldrig har brug for at se det originale password.
+
+---
+
+### Hvornår og hvorfor dekrypterer jeg data?
+
+Data dekrypteres **når den læses** fra JSON-filen (`get_user` og `get_all_users`). Det gøres fordi:
+
+- Applikationen har brug for at vise brugerdata i klartekst til autoriserede brugere.
+- Dekryptering sker kun i hukommelsen – den dekrypterede data skrives aldrig tilbage til filen.
+
+---
+
+### Hvornår og hvorfor fjerner jeg dekrypteret data fra hukommelsen?
+
+Dekrypteret data fjernes fra hukommelsen **så snart den ikke længere er i brug**. I Python sker dette automatisk via garbage collection, når variablen går ud af scope (f.eks. når en funktion returnerer).
+
+Det er vigtigt fordi:
+
+- Dekrypteret persondata i hukommelsen er sårbar. Hvis en angriber har adgang til serverens RAM, kan de læse dataen.
+- Jo kortere tid data ligger dekrypteret i hukommelsen, jo mindre er risikoen for datalæk.
+
+---
+
+### Bør man tage hensyn til noget andet?
+
+- **Nøgleopbevaring** – `secret.key` filen bør opbevares sikkert og aldrig committes til Git. Den bør tilføjes til `.gitignore`.
+- **Salt på passwords** – SHA-256 uden salt er sårbar over for rainbow table-angreb. I produktion bør man bruge bcrypt eller Argon2 der automatisk tilføjer salt.
+- **Backup af nøgle** – hvis `secret.key` går tabt, kan al krypteret data ikke dekrypteres. Der bør være en sikker backup.
+- **HTTPS** – data bør transporteres krypteret over netværket, så det ikke kan opfanges undervejs.
+- **Adgangskontrol** – ikke alle brugere bør kunne se al data. Der bør implementeres roller og rettigheder.

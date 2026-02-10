@@ -1,10 +1,14 @@
 import unittest
 import sys
 import os
-from flat_file_db import create_user, get_user, get_all_users, update_user, delete_user, _save_db, DB_FILE
+import json
+from flat_file_db import (
+    create_user, get_user, get_all_users, update_user, delete_user,
+    _save_db, DB_FILE, KEY_FILE,
+    encrypt, decrypt, hash_password, verify_password
+)
 
 # Terminal farver
-GREEN = "\033[92m"
 YELLOW = "\033[93m"
 RESET = "\033[0m"
 
@@ -22,6 +26,8 @@ class TestCRUD(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(DB_FILE):
             os.remove(DB_FILE)
+        if os.path.exists(KEY_FILE):
+            os.remove(KEY_FILE)
 
     # --- CREATE ---
 
@@ -30,8 +36,7 @@ class TestCRUD(unittest.TestCase):
         # Given: En tom database
         # When: En bruger oprettes
         user = create_user("Anders", "Jensen", "Hovedgaden", "12A", "hemmelig123")
-        # Then: Brugeren returneres med korrekte data
-        self.assertEqual(user["first_name"], "Anders")
+        # Then: Brugeren returneres med person_id
         self.assertEqual(user["person_id"], 1)
 
     # Risiko: Tomme felter accepteres uden validering.
@@ -39,8 +44,7 @@ class TestCRUD(unittest.TestCase):
         # Given: En tom database
         # When: En bruger oprettes med tomme strenge
         user = create_user("", "", "", "", "")
-        # Then: Brugeren oprettes alligevel (ingen validering)
-        self.assertEqual(user["first_name"], "")
+        # Then: Brugeren oprettes alligevel
         self.assertEqual(user["person_id"], 1)
         note("Tomme felter accepteres - ingen validering")
 
@@ -52,7 +56,7 @@ class TestCRUD(unittest.TestCase):
         create_user("Anders", "Jensen", "Hovedgaden", "12A", "hemmelig123")
         # When: Brugeren hentes
         user = get_user(1)
-        # Then: Den korrekte bruger returneres
+        # Then: Dekrypteret data returneres
         self.assertEqual(user["first_name"], "Anders")
 
     # Risiko: Systemet crasher ved opslag på id der ikke findes.
@@ -134,6 +138,72 @@ class TestCRUD(unittest.TestCase):
         # Then: Bruger 2 eksisterer stadig
         self.assertIsNotNone(get_user(2))
         self.assertEqual(len(get_all_users()), 1)
+
+    # --- KRYPTERING ---
+
+    # Risiko: Persondata gemmes i klartekst i JSON-filen.
+    def test_data_is_encrypted_in_file(self):
+        # Given: En bruger oprettes
+        create_user("Anders", "Jensen", "Hovedgaden", "12A", "hemmelig123")
+        # When: Vi læser rå data fra JSON-filen
+        with open(DB_FILE, "r") as f:
+            raw = json.load(f)
+        # Then: Persondata er IKKE i klartekst
+        self.assertNotEqual(raw[0]["first_name"], "Anders")
+        self.assertNotEqual(raw[0]["last_name"], "Jensen")
+        self.assertNotEqual(raw[0]["address"], "Hovedgaden")
+
+    # Risiko: Krypteret data kan ikke dekrypteres korrekt.
+    def test_data_is_decrypted_on_read(self):
+        # Given: En bruger oprettes med krypteret data
+        create_user("Anders", "Jensen", "Hovedgaden", "12A", "hemmelig123")
+        # When: Brugeren hentes
+        user = get_user(1)
+        # Then: Data er dekrypteret
+        self.assertEqual(user["first_name"], "Anders")
+        self.assertEqual(user["address"], "Hovedgaden")
+
+    # Risiko: Kryptering/dekryptering fungerer ikke korrekt.
+    def test_encrypt_decrypt_roundtrip(self):
+        # Given: En klartekst
+        original = "Hemmelig besked"
+        # When: Teksten krypteres og dekrypteres
+        encrypted = encrypt(original)
+        decrypted = decrypt(encrypted)
+        # Then: Resultatet er det samme som originalen
+        self.assertEqual(decrypted, original)
+        self.assertNotEqual(encrypted, original)
+
+    # --- HASHING ---
+
+    # Risiko: Passwords gemmes i klartekst.
+    def test_password_is_hashed_in_file(self):
+        # Given: En bruger oprettes med password "hemmelig123"
+        create_user("Anders", "Jensen", "Hovedgaden", "12A", "hemmelig123")
+        # When: Vi læser rå data fra JSON-filen
+        with open(DB_FILE, "r") as f:
+            raw = json.load(f)
+        # Then: Password er IKKE i klartekst
+        self.assertNotEqual(raw[0]["password"], "hemmelig123")
+
+    # Risiko: Korrekte passwords afvises.
+    def test_verify_password_correct(self):
+        # Given: Et hashet password
+        hashed = hash_password("hemmelig123")
+        # When: Det korrekte password verificeres
+        result = verify_password("hemmelig123", hashed)
+        # Then: Verificeringen er True
+        self.assertTrue(result)
+
+    # Risiko: Forkerte passwords accepteres.
+    def test_verify_password_wrong(self):
+        # Given: Et hashet password
+        hashed = hash_password("hemmelig123")
+        # When: Et forkert password verificeres
+        result = verify_password("forkert", hashed)
+        # Then: Verificeringen er False
+        self.assertFalse(result)
+        note("Forkert password afvist korrekt")
 
 
 if __name__ == "__main__":
