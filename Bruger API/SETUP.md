@@ -1,4 +1,4 @@
-# Api & Auth — Bruger REST API
+# Bruger API — Bruger REST API
 
 Et simpelt REST API bygget med FastAPI og en krypteret flat-file database.
 
@@ -10,7 +10,7 @@ Et simpelt REST API bygget med FastAPI og en krypteret flat-file database.
 ## Installation
 
 ```bash
-cd "Api & Auth"
+cd "Bruger API"
 pip install -r requirements.txt
 ```
 

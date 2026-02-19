@@ -2,6 +2,9 @@ import unittest
 import sys
 import os
 import json
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "Kryptering"))
+
 from flat_file_db import (
     create_user, get_user, get_all_users, update_user, delete_user,
     _save_db, DB_FILE, KEY_FILE,

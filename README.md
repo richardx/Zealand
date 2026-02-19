@@ -5,11 +5,11 @@ Jeg forventer at lære, hvordan programkvalitet, fejlhåndtering og sikkerhedsde
 
 
 ### Billede af Python test
-![alt text](image.png)
+![alt text](Billeder/image.png)
 
 
 ### Billede hvor jeg har tilføjet 3 tests.
-![alt text](image-1.png)
+![alt text](Billeder/image-1.png)
 
 # Testteknikker i IT-sikkerhed
 
@@ -103,11 +103,11 @@ Data-dreven unit test der kombinerer Decision Table Test og Grænseværditest.
 
 Testen bruger `@pytest.mark.parametrize` til at køre samme testfunktion med forskellige input-data. Hver række i parametrene repræsenterer et testscenarie fra vores Decision Table (kombinationer af brugernavn, password, kontostatus) og Grænseværditest (antal fejlede loginforsøg ved grænsen på 3).
 
-Se filen: [test_login.py](test_login.py)
+Se filen: [test_login.py](Test/test_login.py)
 
 **Test resultat:**
 
-![Test resultat](image-2.png)
+![Test resultat](Billeder/image-2.png)
 
 
 # Kryptering
@@ -136,7 +136,7 @@ Testene er skrevet med Pythons `unittest` modul og tester alle CRUD-operationer 
 
 ### Test resultater
 
-![alt text](image-3.png)
+![alt text](Billeder/image-3.png)
 > – Screenshot af terminal output fra `python3 -m unittest test.py -v`
 
 ---
