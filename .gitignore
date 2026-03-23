@@ -13,6 +13,7 @@ secret.key
 # Database-filer (auto-genereret)
 flat_file_db.json
 db_user_flat_file.json
+db_test_user_flat_file.json
 
 # Prod-secrets (må ALDRIG i git)
 .env.prod
